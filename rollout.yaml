@@ -1,0 +1,94 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: myapp
+  namespace: canary-demo
+  labels:
+    app: myapp
+spec:
+  replicas: 10
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - name: myapp
+        image: myapp:v1        # start with v1; we'll update to v2 to trigger canary
+        ports:
+        - containerPort: 8080
+        env:
+        - name: PORT
+          value: "8080"
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "50m"
+          limits:
+            memory: "64Mi"
+            cpu: "100m"
+        # Readiness probe - pod must pass this before receiving traffic
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          failureThreshold: 3
+        # Liveness probe - if this fails, k8s restarts the pod
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 3
+
+  strategy:
+    canary:
+      # Traffic routing via Nginx ingress (weight-based)
+      trafficRouting:
+        nginx:
+          stableIngress: myapp-stable-ingress
+
+      # Canary steps - each step must pass before proceeding
+      steps:
+
+      # Step 1: Send 10% traffic to canary, wait 2 mins
+      - setWeight: 10
+      - pause:
+          duration: 2m
+
+      # Step 2: Run automated analysis at 10%
+      - analysis:
+          templates:
+          - templateName: success-rate-analysis
+          - templateName: latency-analysis
+          args:
+          - name: service-name
+            value: myapp-canary-svc
+
+      # Step 3: Increase to 30% if analysis passed
+      - setWeight: 30
+      - pause:
+          duration: 2m
+
+      # Step 4: Run analysis again at 30%
+      - analysis:
+          templates:
+          - templateName: success-rate-analysis
+          args:
+          - name: service-name
+            value: myapp-canary-svc
+
+      # Step 5: 50% — manual approval gate (uncomment pause: {} for real use)
+      - setWeight: 50
+      - pause:
+          duration: 1m   # change to pause: {} for indefinite human approval
+
+      # Step 6: Full rollout
+      - setWeight: 100

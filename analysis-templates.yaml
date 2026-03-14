@@ -1,0 +1,94 @@
+---
+# Analysis Template 1: Success Rate
+# Rolls back automatically if error rate exceeds 5%
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: success-rate-analysis
+  namespace: canary-demo
+spec:
+  args:
+  - name: service-name
+
+  metrics:
+  - name: success-rate
+    # Query every 30 seconds
+    interval: 30s
+    # Need 3 consecutive failures to trigger rollback
+    failureLimit: 3
+    # Must maintain >= 95% success rate
+    successCondition: result[0] >= 0.95
+    failureCondition: result[0] < 0.95
+    provider:
+      prometheus:
+        address: http://prometheus-server.monitoring.svc.cluster.local:9090
+        query: |
+          sum(
+            rate(http_requests_total{
+              app="myapp",
+              status="200"
+            }[2m])
+          )
+          /
+          sum(
+            rate(http_requests_total{
+              app="myapp"
+            }[2m])
+          )
+
+---
+# Analysis Template 2: P99 Latency
+# Rolls back if p99 latency exceeds 500ms
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: latency-analysis
+  namespace: canary-demo
+spec:
+  args:
+  - name: service-name
+
+  metrics:
+  - name: p99-latency
+    interval: 30s
+    failureLimit: 3
+    # p99 must be under 500ms
+    successCondition: result[0] <= 0.5
+    failureCondition: result[0] > 0.5
+    provider:
+      prometheus:
+        address: http://prometheus-server.monitoring.svc.cluster.local:9090
+        query: |
+          histogram_quantile(0.99,
+            sum(
+              rate(http_request_duration_seconds_bucket{
+                app="myapp"
+              }[2m])
+            ) by (le)
+          )
+
+---
+# Analysis Template 3: Error count (absolute)
+# Used as a secondary safety net
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: error-count-analysis
+  namespace: canary-demo
+spec:
+  metrics:
+  - name: error-count
+    interval: 1m
+    failureLimit: 2
+    # Fail if more than 10 errors per minute
+    successCondition: result[0] < 10
+    provider:
+      prometheus:
+        address: http://prometheus-server.monitoring.svc.cluster.local:9090
+        query: |
+          sum(
+            rate(http_requests_total{
+              app="myapp",
+              status="500"
+            }[1m])
+          ) * 60

@@ -1,0 +1,95 @@
+---
+# Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: canary-demo
+  labels:
+    name: canary-demo
+
+---
+# Stable Service - points to v1 pods (managed by Argo Rollouts)
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-stable-svc
+  namespace: canary-demo
+  labels:
+    app: myapp
+    role: stable
+spec:
+  selector:
+    app: myapp
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+  type: ClusterIP
+
+---
+# Canary Service - points to v2 canary pods (managed by Argo Rollouts)
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-canary-svc
+  namespace: canary-demo
+  labels:
+    app: myapp
+    role: canary
+spec:
+  selector:
+    app: myapp          # Argo Rollouts will add canary pod selector automatically
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+  type: ClusterIP
+
+---
+# Stable Ingress - main entry point
+# Argo Rollouts will add weight annotations to split traffic
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: myapp-stable-ingress
+  namespace: canary-demo
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: myapp.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: myapp-stable-svc
+            port:
+              number: 80
+
+---
+# Canary Ingress - Argo Rollouts manages weight annotation on this
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: myapp-canary-ingress
+  namespace: canary-demo
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    # Argo Rollouts will set this weight automatically at each step
+    nginx.ingress.kubernetes.io/canary: "true"
+    nginx.ingress.kubernetes.io/canary-weight: "0"
+spec:
+  rules:
+  - host: myapp.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: myapp-canary-svc
+            port:
+              number: 80

@@ -5,8 +5,11 @@ A complete, runnable project demonstrating **canary deployments with automatic r
 - **Nginx Ingress** — weighted traffic splitting  
 - **Prometheus** — metrics collection
 - **AnalysisTemplates** — automated pass/fail gates
+
 ---
+
 ## What this project contains
+
 ```
 canary-demo/
 ├── app-v1/                     # Stable app (0% error rate)
