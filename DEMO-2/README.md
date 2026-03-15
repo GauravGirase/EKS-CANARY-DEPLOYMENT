@@ -131,7 +131,7 @@ kubectl apply -f monitoring/prometheus.yaml
 ```
 **Access:**
 ```bash
-kubectl port-forward -n monitoring deploy/prometheus 9090
+kubectl port-forward -n monitoring deploy/prometheus --address 0.0.0.0 9090:9090
 ```
 ## Step 5: Install Grafana
 monitoring/grafana.yaml
@@ -161,7 +161,7 @@ spec:
 kubectl apply -f monitoring/grafana.yaml
 ```
 ```bash
-kubectl port-forward -n monitoring deploy/grafana 3000
+kubectl port-forward -n monitoring deploy/grafana --address 0.0.0.0 3000:3000
 ```
 **Login:**
 ```bash
@@ -215,7 +215,7 @@ spec:
 ```
 **Note:** Meaning- If error rate > 5% → rollback
 
-## Step 8: Rollout Canary Deployment
+## Step 8: Rollout Canary Deployment (Note: No need to apply manually , argoCD applicatio will perform sync)
 ```bash
 #apps/canary-demo/rollout.yaml
 apiVersion: argoproj.io/v1alpha1
@@ -290,6 +290,13 @@ spec:
 ```bash
 kubectl apply -f argocd/application.yaml
 ```
+## Check ArgoCD UI (Add Snapshot)
+
+**Wait for few seconds**
+```bash
+kubectl get pods -n canary-demo
+```
+
 ## Step 10 : Trigger Canary Deployment
 **Update image:**
 ```bash
@@ -306,6 +313,8 @@ kubectl get pods -n canary-demo
 kubectl argo rollouts get rollout canary-demo -n canary-demo
 kubectl argo rollouts promote canary-demo -n canary-demo
 kubectl argo rollouts abort canary-demo -n canary-demo
+curl -i http://canary-demo.canary-demo.svc.cluster.local:80/api/data
+curl -i http://canary-demo.canary-demo.svc.cluster.local:80/metrics
 ```
 ## Step 12: Grafana Dashboard
 In Grafana, Add Prometheus datasource:
