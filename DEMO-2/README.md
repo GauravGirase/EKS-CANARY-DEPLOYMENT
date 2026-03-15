@@ -329,6 +329,10 @@ In Grafana, Add Prometheus datasource:
 http://prometheus.monitoring:9090
 # query for error rate
 rate(http_requests_total{status="500"}[1m])
-``
 
-10.244.0.28
+# Success request 2..
+sum(increase(http_requests_total{status="200", app="myapp", job="kubernetes-pods"}[$__range]))
+# Failed request 5..
+sum(increase(http_requests_total{status="500", app="myapp", job="kubernetes-pods"}[$__range]))
+
+```
