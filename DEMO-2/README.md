@@ -256,7 +256,7 @@ spec:
     spec:
       containers:
       - name: canary-demo
-        image: myrepo/stable:v1
+        image: gauravgirase/canary:v1.0.0
         ports:
         - containerPort: 8080
 ```
@@ -274,7 +274,7 @@ spec:
   project: default
 
   source:
-    repoURL: https://github.com/YOUR_GITHUB/gitops-argo-canary-demo
+    repoURL: https://github.com/GauravGirase/EKS-CANARY-DEPLOYMENT.git
     targetRevision: HEAD
     path: apps/canary-demo
 
@@ -293,7 +293,7 @@ kubectl apply -f argocd/application.yaml
 ## Step 10 : Trigger Canary Deployment
 **Update image:**
 ```bash
-image: myrepo/buggy:v2
+image: gauravgirase/canary-buggy:v1.0.0
 ```
 **ArgoCD syncs → Argo Rollouts starts canary.**
 ## Step 11: Watch Rollout
