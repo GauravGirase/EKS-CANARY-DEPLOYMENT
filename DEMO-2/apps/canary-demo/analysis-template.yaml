@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: error-rate-check
+  namespace: canary-demo
+
+spec:
+  metrics:
+  - name: error-rate
+    interval: 30s
+    successCondition: result < 0.05
+    failureLimit: 3
+
+    provider:
+      prometheus:
+        address: http://prometheus.monitoring:9090
+
+        query: |
+          rate(http_requests_total{status="500"}[1m])
