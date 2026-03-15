@@ -315,7 +315,7 @@ kubectl argo rollouts promote canary-demo -n canary-demo
 kubectl argo rollouts abort canary-demo -n canary-demo
 curl -i http://canary-demo.canary-demo.svc.cluster.local:80/api/data
 curl -i http://canary-demo.canary-demo.svc.cluster.local:80/metrics
-
+while true; do curl -s http://canary-demo.canary-demo.svc.cluster.local/api/data; sleep 0.2; done
 kubectl exec -it -n monitoring prometheus-ff7885458-cf64r -- cat /etc/prometheus/prometheus.yml
 
 # Analysis
