@@ -3,10 +3,6 @@ kind: Rollout
 metadata:
   name: canary-demo
   namespace: canary-demo
-  annotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "8080"
-    prometheus.io/path: "/metrics"
 
 spec:
   replicas: 5
@@ -36,6 +32,10 @@ spec:
     metadata:
       labels:
         app: canary-demo
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
 
     spec:
       containers:

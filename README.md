@@ -218,3 +218,79 @@ kubectl argo rollouts get rollout myapp -n canary-demo --watch
 - **Add ArgoCD**: `kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml -n argocd`
 - **Use Istio instead of Nginx**: Change `trafficRouting.nginx` to `trafficRouting.istio` in rollout.yaml
 - **Add Flagger**: Alternative to Argo Rollouts with Helm-native integration
+
+## kubectl-argo-rollout
+```bash
+curl -LO https://github.com/argoproj/argo-rollouts/releases/latest/download/kubectl-argo-rollouts-linux-amd64
+chmod +x kubectl-argo-rollouts-linux-amd64
+sudo mv kubectl-argo-rollouts-linux-amd64 /usr/local/bin/kubectl-argo-rollouts
+```
+
+
+
+kind create cluster --name canary-demo
+
+kubectl create namespace argo-rollouts
+kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+kubectl get pods -n argo-rollouts
+
+## Install Argo Rollouts kubectl Plugin
+```bash
+curl -LO https://github.com/argoproj/argo-rollouts/releases/latest/download/kubectl-argo-rollouts-linux-amd64
+chmod +x kubectl-argo-rollouts-linux-amd64
+sudo mv kubectl-argo-rollouts-linux-amd64 /usr/local/bin/kubectl-argo-rollouts
+kubectl argo rollouts version
+```
+
+```bash
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-stable-svc
+  namespace: canary-demo
+spec:
+  selector:
+    app: myapp
+  ports:
+  - port: 80
+    targetPort: 8080
+```
+kubectl apply -f stable-service.yaml
+
+```bash
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-canary-svc
+  namespace: canary-demo
+spec:
+  selector:
+    app: myapp
+  ports:
+  - port: 80
+    targetPort: 8080
+```
+kubectl apply -f canary-service.yaml
+
+```bash
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: myapp-stable-ingress
+  namespace: canary-demo
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+  - host: myapp.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: myapp-stable-svc
+            port:
+              number: 80
+```
+kubectl apply -f ingress.yaml

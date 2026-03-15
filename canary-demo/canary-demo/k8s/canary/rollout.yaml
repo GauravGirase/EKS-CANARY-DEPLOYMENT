@@ -50,6 +50,8 @@ spec:
 
   strategy:
     canary:
+      canaryService: myapp-canary-svc
+      stableService: myapp-stable-svc
       # Traffic routing via Nginx ingress (weight-based)
       trafficRouting:
         nginx:
