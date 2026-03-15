@@ -315,6 +315,8 @@ kubectl argo rollouts promote canary-demo -n canary-demo
 kubectl argo rollouts abort canary-demo -n canary-demo
 curl -i http://canary-demo.canary-demo.svc.cluster.local:80/api/data
 curl -i http://canary-demo.canary-demo.svc.cluster.local:80/metrics
+
+kubectl exec -it -n monitoring prometheus-ff7885458-cf64r -- cat /etc/prometheus/prometheus.yml
 ```
 ## Step 12: Grafana Dashboard
 In Grafana, Add Prometheus datasource:
@@ -323,3 +325,5 @@ http://prometheus.monitoring:9090
 # query for error rate
 rate(http_requests_total{status="500"}[1m])
 ``
+
+10.244.0.28
