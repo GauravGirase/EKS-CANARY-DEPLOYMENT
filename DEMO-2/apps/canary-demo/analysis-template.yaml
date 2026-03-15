@@ -13,7 +13,7 @@ spec:
 
     provider:
       prometheus:
-        address: http://prometheus.monitoring:9090
+        address: http://65.0.100.19:9090
 
         query: |
           rate(http_requests_total{status="500"}[1m])
