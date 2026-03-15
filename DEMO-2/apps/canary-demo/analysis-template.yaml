@@ -16,6 +16,7 @@ spec:
         address: http://65.0.100.19:9090
 
         query: |
-          sum(rate(http_requests_total{status=~"5.."}[1m]))
-          /
-          sum(rate(http_requests_total[1m]))
+          scalar(
+            sum(rate(http_requests_total{status=~"5.."}[1m])) /
+            sum(rate(http_requests_total[1m]))
+          )

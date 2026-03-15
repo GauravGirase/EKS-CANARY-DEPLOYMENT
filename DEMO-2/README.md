@@ -317,6 +317,11 @@ curl -i http://canary-demo.canary-demo.svc.cluster.local:80/api/data
 curl -i http://canary-demo.canary-demo.svc.cluster.local:80/metrics
 
 kubectl exec -it -n monitoring prometheus-ff7885458-cf64r -- cat /etc/prometheus/prometheus.yml
+
+# Analysis
+kubectl get analysisrun -n canary-demo
+kubectl describe analysisrun <analysisrun-name> -n canary-demo
+
 ```
 ## Step 12: Grafana Dashboard
 In Grafana, Add Prometheus datasource:
