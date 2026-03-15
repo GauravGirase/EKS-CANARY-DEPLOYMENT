@@ -276,7 +276,7 @@ spec:
   source:
     repoURL: https://github.com/GauravGirase/EKS-CANARY-DEPLOYMENT.git
     targetRevision: HEAD
-    path: apps/canary-demo
+    path: DEMO-2/apps/canary-demo
 
   destination:
     server: https://kubernetes.default.svc
