@@ -9,7 +9,6 @@ metadata:
   name: prometheus
   namespace: monitoring
 spec:
-  serviceAccountName: prometheus
   replicas: 1
   selector:
     matchLabels:
@@ -19,6 +18,7 @@ spec:
       labels:
         app: prometheus
     spec:
+      serviceAccountName: prometheus
       containers:
       - name: prometheus
         image: prom/prometheus
