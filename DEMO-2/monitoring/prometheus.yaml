@@ -9,6 +9,7 @@ metadata:
   name: prometheus
   namespace: monitoring
 spec:
+  serviceAccountName: prometheus
   replicas: 1
   selector:
     matchLabels:
