@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: canary-demo
+  name: myapp
   namespace: canary-demo
 
 spec:
@@ -26,12 +26,12 @@ spec:
 
   selector:
     matchLabels:
-      app: canary-demo
+      app: myapp
 
   template:
     metadata:
       labels:
-        app: canary-demo
+        app: myapp
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8080"
@@ -39,7 +39,7 @@ spec:
 
     spec:
       containers:
-      - name: canary-demo
+      - name: myapp
         image: gauravgirase/canary:v1.0.0
         ports:
         - containerPort: 8080

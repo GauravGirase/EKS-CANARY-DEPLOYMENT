@@ -5,7 +5,7 @@ metadata:
   namespace: canary-demo
 spec:
   selector:
-    app: canary-demo
+    app: myapp
   ports:
   - port: 80
     targetPort: 8080
